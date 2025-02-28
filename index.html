@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Proxy</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">URL Proxy Service</h1>
+        <form id="proxyForm" class="mt-4">
+            <div class="form-group">
+                <label for="url">Enter URL to Proxy:</label>
+                <input type="text" class="form-control" id="url" name="url" placeholder="e.g., google.com/search?q=example" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Proxy URL</button>
+        </form>
+    </div>
+
+    <script>
+        async function proxyRequest(url, method, headers, data) {
+            const response = await fetch(url, {
+                method: method,
+                headers: headers,
+                body: data
+            });
+            return response;
+        }
+
+        function isApproved(url) {
+            const approvedHosts = new Set(["google.com", "www.google.com", "yahoo.com"]);
+            const urlParts = new URL(url);
+            return approvedHosts.has(urlParts.hostname);
+        }
+
+        function getProxiedRequestInfo(proxyUrl) {
+            const urlParts = new URL(proxyUrl);
+            const pathMatch = urlParts.pathname.match(/^\/p\/([^/]+)\/?(.*)/);
+            if (pathMatch) {
+                return [pathMatch[1], pathMatch[2] || '/'];
+            }
+            return null;
+        }
+
+        function streamResponse(response) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            const stream = new ReadableStream({
+                async start(controller) {
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        controller.enqueue(decoder.decode(value));
+                    }
+                    controller.close();
+                }
+            });
+            return new Response(stream);
+        }
+
+        document.getElementById('proxyForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const url = document.getElementById('url').value;
+            const method = 'POST';
+            const headers = {};
+            const data = new FormData();
+
+            if (!isApproved(url)) {
+                alert('URL is not approved.');
+                return;
+            }
+
+            try {
+                const response = await proxyRequest(`http://localhost:5000/${url}`, method, headers, data);
+                const proxiedInfo = getProxiedRequestInfo(response.url);
+
+                if (proxiedInfo) {
+                    const redirectUrl = `/p/${proxiedInfo[0]}/${url}`;
+                    window.location.href = redirectUrl;
+                } else {
+                    const result = await streamResponse(response);
+                    document.write(await result.text());
+                }
+            } catch (error) {
+                console.error('Proxy request failed:', error);
+            }
+        });
+    </script>
+</body>
+
+</html>
