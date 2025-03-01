@@ -1,97 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URL Proxy</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <title>Proxy Iframe</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        iframe {
+            width: 80%;
+            height: 80%;
+            border: 1px solid #ccc;
+            display: none; /* Hidden until the URL is loaded */
+            margin-top: 20px;
+        }
+        input, button {
+            padding: 10px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        button {
+            cursor: pointer;
+        }
+    </style>
 </head>
-
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center">URL Proxy Service</h1>
-        <form id="proxyForm" class="mt-4">
-            <div class="form-group">
-                <label for="url">Enter URL to Proxy:</label>
-                <input type="text" class="form-control" id="url" name="url" placeholder="e.g., google.com/search?q=example" required>
-            </div>
-            <button type="submit" class="btn btn-primary btn-block">Proxy URL</button>
-        </form>
-    </div>
+    <h1>Proxy Iframe</h1>
+    <p>Enter the URL below and click "Load URL" to view it:</p>
+    
+    <!-- Input field to enter the URL -->
+    <input type="text" id="url" placeholder="Enter URL (e.g., https://example.com)" />
+    
+    <!-- Button to load the URL into iframe -->
+    <button id="load">Load URL</button>
+
+    <!-- Iframe to display the loaded URL -->
+    <iframe id="iframe" src=""></iframe>
 
     <script>
-        async function proxyRequest(url, method, headers, data) {
-            const response = await fetch(url, {
-                method: method,
-                headers: headers,
-                body: data
-            });
-            return response;
-        }
+        document.getElementById('load').addEventListener('click', function() {
+            const url = document.getElementById('url').value.trim(); // Get the URL from the input field
+            const iframe = document.getElementById('iframe'); // Get the iframe element
 
-        function isApproved(url) {
-            const approvedHosts = new Set(["google.com", "www.google.com", "yahoo.com"]);
-            const urlParts = new URL(url);
-            return approvedHosts.has(urlParts.hostname);
-        }
+            // Check if the URL is not empty
+            if (url) {
+                // Encode the URL to be safely passed as a query parameter
+                const proxyUrl = '/proxy?url=' + encodeURIComponent(url);
+                
+                // Set the iframe src to the proxy URL
+                iframe.src = proxyUrl;
 
-        function getProxiedRequestInfo(proxyUrl) {
-            const urlParts = new URL(proxyUrl);
-            const pathMatch = urlParts.pathname.match(/^\/p\/([^/]+)\/?(.*)/);
-            if (pathMatch) {
-                return [pathMatch[1], pathMatch[2] || '/'];
-            }
-            return null;
-        }
-
-        function streamResponse(response) {
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            const stream = new ReadableStream({
-                async start(controller) {
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        controller.enqueue(decoder.decode(value));
-                    }
-                    controller.close();
-                }
-            });
-            return new Response(stream);
-        }
-
-        document.getElementById('proxyForm').addEventListener('submit', async function (e) {
-            e.preventDefault();
-            const url = document.getElementById('url').value;
-            const method = 'POST';
-            const headers = {};
-            const data = new FormData();
-
-            if (!isApproved(url)) {
-                alert('URL is not approved.');
-                return;
-            }
-
-            try {
-                const response = await proxyRequest(`http://localhost:5000/${url}`, method, headers, data);
-                const proxiedInfo = getProxiedRequestInfo(response.url);
-
-                if (proxiedInfo) {
-                    const redirectUrl = `/p/${proxiedInfo[0]}/${url}`;
-                    window.location.href = redirectUrl;
-                } else {
-                    const result = await streamResponse(response);
-                    document.write(await result.text());
-                }
-            } catch (error) {
-                console.error('Proxy request failed:', error);
+                // Show the iframe
+                iframe.style.display = 'block';
+            } else {
+                alert('Please enter a valid URL.');
             }
         });
     </script>
 </body>
-
 </html>
+
