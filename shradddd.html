@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP Proxy Mock</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .proxy-output {
+            background-color: #282c34;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        input[type="text"], button {
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 500px;
+            display: block;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>HTTP Proxy Mock</h1>
+        <p>Enter a URL to simulate an HTTP request through a proxy.</p>
+        
+        <input type="text" id="url-input" placeholder="Enter URL (e.g., https://example.com)">
+        <button onclick="handleProxyRequest()">Send Request</button>
+        
+        <h2>Proxy Output:</h2>
+        <div class="proxy-output" id="proxy-output"></div>
+    </div>
+
+    <script>
+        // Function to handle the mock proxy request
+        async function handleProxyRequest() {
+            const urlInput = document.getElementById("url-input").value;
+            const outputDiv = document.getElementById("proxy-output");
+
+            if (!urlInput) {
+                alert("Please enter a URL.");
+                return;
+            }
+
+            try {
+                // Use CORS Proxy to bypass restrictions
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(urlInput)}`;
+                
+                const response = await fetch(proxyUrl, { method: 'GET' });
+                
+                if (response.ok) {
+                    const jsonResponse = await response.json();
+                    const data = jsonResponse.contents;
+                    outputDiv.innerHTML = `
+                        <strong>Request Successful!</strong><br>
+                        URL: ${urlInput}<br>
+                        <strong>Response:</strong><br>
+                        <pre>${data.slice(0, 500)}</pre>
+                        <small>Only the first 500 characters of the response are shown.</small>
+                    `;
+                } else {
+                    outputDiv.innerHTML = `
+                        <strong>Request Failed!</strong><br>
+                        URL: ${urlInput}<br>
+                        Status: ${response.status} ${response.statusText}
+                    `;
+                }
+            } catch (error) {
+                outputDiv.innerHTML = `
+                    <strong>Request Error!</strong><br>
+                    Unable to connect to the server. Please check the URL.
+                `;
+            }
+        }
+    </script>
+
+</body>
+</html>
