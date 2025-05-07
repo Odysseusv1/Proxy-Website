@@ -1,96 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Local Proxy Iframe</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #121212; /* Dark background */
-            color: #ffffff; /* Light text color */
-        }
-
-        #iframe-container {
-            margin-top: 20px;
-            border: 2px solid #444; /* Darker border */
-            height: 600px;
-            position: relative; /* Added for fullscreen positioning */
-            background-color: #1e1e1e; /* Darker container background */
-        }
-
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        #urlInput {
-            padding: 10px;
-            font-size: 16px;
-            width: 300px;
-            background-color: #333; /* Dark input background */
-            color: #ffffff; /* Light text color */
-            border: 1px solid #444; /* Dark border */
-        }
-
-        #submitButton, #fullscreenButton {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-right: 10px; /* Added margin for spacing */
-            background-color: #444; /* Dark button background */
-            color: #ffffff; /* Light text color */
-            border: none; /* No border */
-            transition: background-color 0.3s; /* Smooth transition */
-        }
-
-        #submitButton:hover, #fullscreenButton:hover {
-            background-color: #555; /* Lighter on hover */
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Local Proxy Iframe</title>
+<style>
+  /* Reset and base */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    user-select: none;
+    padding: 20px;
+  }
+  body {
+    max-width: 350px;
+    max-height: 600px;
+    margin: auto;
+    position: relative;
+  }
+  h1 {
+    font-size: 3.2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-shadow:
+      3px 3px 10px rgba(0,0,0,0.4),
+      -3px -3px 10px rgba(255,255,255,0.15);
+    animation: pulse 2s ease-in-out infinite;
+    margin-bottom: 0.5em;
+  }
+  .laugh-emoji {
+    font-size: 6rem;
+    animation: rotateBounce 3s infinite ease-in-out;
+    display: inline-block;
+    margin-bottom: 0.5em;
+    filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.6));
+  }
+  .subtitle {
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+    animation: jitter 5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); color: #fff;}
+    50% { transform: scale(1.1); color: #ffe600;}
+  }
+  @keyframes rotateBounce {
+    0%, 100% { transform: rotate(0deg) translateY(0); }
+    50% { transform: rotate(15deg) translateY(-15px); }
+  }
+  @keyframes jitter {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(2px) rotate(2deg); }
+    50% { transform: translateX(-2px) rotate(-2deg);}
+    75% { transform: translateX(1px) rotate(1deg); }
+  }
+  /* Confetti shapes */
+  .confetti {
+    pointer-events: none;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #fff200;
+    opacity: 0.8;
+    top: 0; 
+    left: 0;
+    animation: confetti-fall linear infinite;
+  }
+  @keyframes confetti-fall {
+    0% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(600px) rotate(720deg);
+      opacity: 0;
+    }
+  }
+</style>
 </head>
 <body>
-
-<h1>Proxy Links in an Iframe</h1>
-<p>Enter a URL to be displayed in an iframe:</p>
-
-<input type="text" id="urlInput" placeholder="Enter URL">
-<button id="submitButton">Load URL</button>
-<button id="fullscreenButton">Toggle Fullscreen</button>
-
-<div id="iframe-container">
-    <iframe id="proxyIframe" src=""></iframe>
-</div>
+  <div>
+    <div class="laugh-emoji" aria-label="Laughing face emoji" role="img">😂</div>
+    <h1>I'm Laughing at You!</h1>
+    <div class="subtitle">Seriously, you can't stop me! 😂😂😂</div>
+  </div>
 
 <script>
-    document.getElementById("submitButton").addEventListener("click", function() {
-        const url = document.getElementById("urlInput").value;
-        const iframe = document.getElementById("proxyIframe");
+  // Create confetti animations for fun effect
+  const confettiCount = 30;
+  const colors = ['#ffe600', '#ff416c', '#ff4b2b', '#ffffff', '#f4d35e'];
+  function random(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+  function createConfetti() {
+    const confetti = document.createElement('div');
+    confetti.classList.add('confetti');
+    confetti.style.background = colors[Math.floor(random(0, colors.length))];
+    confetti.style.left = random(0, 350) + 'px';
+    confetti.style.width = confetti.style.height = random(6, 12) + 'px';
+    confetti.style.animationDuration = random(3, 6) + 's';
+    confetti.style.animationDelay = random(0, 5) + 's';
+    document.body.appendChild(confetti);
+    setTimeout(() => {
+      confetti.remove();
+    }, 6000);
+  }
 
-        if (url) {
-            // Check if 'noads' parameter is in the URL or add it
-            const modifiedUrl = url.includes('?') ? `${url}&noads=true` : `${url}?noads=true`;
+  // Periodically generate confetti
+  setInterval(() => {
+    createConfetti();
+  }, 200);
 
-            iframe.src = modifiedUrl;  // Set the iframe src to the modified URL
-        } else {
-            alert("Please enter a URL.");
-        }
-    });
-
-    document.getElementById("fullscreenButton").addEventListener("click", function() {
-        const iframeContainer = document.getElementById("iframe-container");
-
-        if (!document.fullscreenElement) {
-            iframeContainer.requestFullscreen().catch(err => {
-                alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-            });
-        } else {
-            document.exitFullscreen();
-        }
-    });
 </script>
-
 </body>
 </html>
+</content>
+</create_file>
