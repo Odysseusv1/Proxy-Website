@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Proxy Iframe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #121212;
+            color: #ffffff;
+        }
+
+        #iframe-container {
+            margin-top: 20px;
+            border: 2px solid #444;
+            height: 600px;
+            position: relative;
+            background-color: #1e1e1e;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        #urlInput {
+            padding: 10px;
+            font-size: 16px;
+            width: 300px;
+            background-color: #333;
+            color: #ffffff;
+            border: 1px solid #444;
+        }
+
+        #submitButton, #fullscreenButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+            background-color: #444;
+            color: #ffffff;
+            border: none;
+            transition: background-color 0.3s;
+        }
+
+        #submitButton:hover, #fullscreenButton:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Proxy Links in an Iframe</h1>
+<p>Enter a URL to be displayed in an iframe:</p>
+
+<input type="text" id="urlInput" placeholder="Enter URL">
+<button id="submitButton">Load URL</button>
+<button id="fullscreenButton">Toggle Fullscreen</button>
+
+<div id="iframe-container">
+    <iframe id="proxyIframe" src=""></iframe>
+</div>
+
+<script>
+    const iframe = document.getElementById("proxyIframe");
+    const urlInput = document.getElementById("urlInput");
+    const submitButton = document.getElementById("submitButton");
+
+    // Function to update iframe src
+    function updateIframeSrc(url) {
+        if (url) {
+            iframe.src = url;
+        } else {
+            alert("Please enter a URL.");
+        }
+    }
+
+    // Event listener for the submit button
+    submitButton.addEventListener("click", function() {
+        updateIframeSrc(urlInput.value);
+    });
+
+    // MutationObserver to detect changes in the input field
+    const observer = new MutationObserver(() => {
+        updateIframeSrc(urlInput.value);
+    });
+
+    observer.observe(urlInput, {
+        attributes: true,
+        attributeFilter: ['value']
+    });
+
+    // Fullscreen toggle functionality
+    document.getElementById("fullscreenButton").addEventListener("click", function() {
+        const iframeContainer = document.getElementById("iframe-container");
+
+        if (!document.fullscreenElement) {
+            iframeContainer.requestFullscreen().catch(err => {
+                alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    });
+</script>
+
+</body>
+</html>
