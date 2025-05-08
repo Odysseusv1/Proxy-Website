@@ -64,39 +64,39 @@
     <iframe id="proxyIframe" src=""></iframe>
 </div>
 
+
 <script>
-    const iframe = document.getElementById("proxyIframe");
     const urlInput = document.getElementById("urlInput");
     const submitButton = document.getElementById("submitButton");
+    const iframeContainer = document.getElementById("iframe-container");
 
-    // Function to update iframe src
-    function updateIframeSrc(url) {
-        if (url) {
-            iframe.src = url;
-        } else {
+    // Function to create and append a new iframe with the given URL
+    function createNewIframe(url) {
+        if (!url) {
             alert("Please enter a URL.");
+            return;
         }
+
+        // Remove the old iframe if it exists
+        const oldIframe = document.getElementById("proxyIframe");
+        if (oldIframe) {
+            iframeContainer.removeChild(oldIframe);
+        }
+
+        // Create a new iframe
+        const newIframe = document.createElement("iframe");
+        newIframe.id = "proxyIframe";
+        newIframe.src = url;
+        iframeContainer.appendChild(newIframe);
     }
 
     // Event listener for the submit button
-    submitButton.addEventListener("click", function() {
-        updateIframeSrc(urlInput.value);
-    });
-
-    // MutationObserver to detect changes in the input field
-    const observer = new MutationObserver(() => {
-        updateIframeSrc(urlInput.value);
-    });
-
-    observer.observe(urlInput, {
-        attributes: true,
-        attributeFilter: ['value']
+    submitButton.addEventListener("click", function () {
+        createNewIframe(urlInput.value);
     });
 
     // Fullscreen toggle functionality
-    document.getElementById("fullscreenButton").addEventListener("click", function() {
-        const iframeContainer = document.getElementById("iframe-container");
-
+    document.getElementById("fullscreenButton").addEventListener("click", function () {
         if (!document.fullscreenElement) {
             iframeContainer.requestFullscreen().catch(err => {
                 alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
